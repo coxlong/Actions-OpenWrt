@@ -50,18 +50,21 @@ jobs:
 
       - name: Update feeds
         run: |
+          cd openwrt
           sed -i 's/#src-git helloworld/src-git helloworld/g' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
       - name: Generate configuration file
-        run: make defconfig
+        run: cd openwrt && make defconfig
 
       - name: Download packages
-        run: make download -j16
+        run: cd openwrt && make download -j16
 
       - name: Compile firmware
         run: |
+          cd openwrt
+          ls -la
           make -j$(nproc) || make -j1 V=s
           echo "======================="
           echo "Space usage:"
@@ -76,9 +79,11 @@ jobs:
         run: |
           mkdir -p ./artifact/package
           mkdir -p ./artifact/buildinfo
-          rm -rf $(find ./bin/targets/ -type d -name "packages")
-          cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
-          cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+          mkdir -p ./artifact/bin
+          rm -rf $(find ./openwrt/bin/targets/ -type d -name "packages")
+          cp -rf $(find ./openwrt/bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          cp -rf $(find ./openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+          cp -rf ./openwrt/bin/targets/* ./artifact/bin/
 
       - name: Upload buildinfo
         uses: actions/upload-artifact@v3
@@ -96,7 +101,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: OpenWrt_firmware
-          path: ./bin/targets/
+          path: ./artifact/bin/
 
       - name: Generate release tag
         id: tag
@@ -105,7 +110,7 @@ jobs:
           touch release.txt
           echo "hello world" >> release.txt
           echo "::set-output name=status::success"
-          ls -la ./bin/targets
+          ls -la ./artifact/bin/
 
       - name: Upload firmware to release
         uses: softprops/action-gh-release@v1
@@ -114,4 +119,4 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
-          files: ./bin/targets/
+          files: ./artifact/bin/*
