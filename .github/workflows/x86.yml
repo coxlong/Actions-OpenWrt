@@ -61,47 +61,47 @@ jobs:
       - name: Download packages
         run: cd openwrt && make download -j16
 
-      # - name: Compile firmware
-      #   run: |
-      #     cd openwrt
-      #     ls -la
-      #     make -j$(nproc) || make -j1 V=s
-      #     echo "======================="
-      #     echo "Space usage:"
-      #     echo "======================="
-      #     df -h
-      #     echo "======================="
-      #     du -h --max-depth=1 ./ --exclude=build_dir --exclude=bin
-      #     du -h --max-depth=1 ./build_dir
-      #     du -h --max-depth=1 ./bin
+      - name: Compile firmware
+        run: |
+          cd openwrt
+          ls -la
+          make -j$(nproc) || make -j1 V=s
+          echo "======================="
+          echo "Space usage:"
+          echo "======================="
+          df -h
+          echo "======================="
+          du -h --max-depth=1 ./ --exclude=build_dir --exclude=bin
+          du -h --max-depth=1 ./build_dir
+          du -h --max-depth=1 ./bin
 
-      # - name: Prepare artifact
-      #   run: |
-      #     mkdir -p ./artifact/package
-      #     mkdir -p ./artifact/buildinfo
-      #     mkdir -p ./artifact/bin
-      #     rm -rf $(find ./openwrt/bin/targets/ -type d -name "packages")
-      #     cp -rf $(find ./openwrt/bin/packages/ -type f -name "*.ipk") ./artifact/package/
-      #     cp -rf $(find ./openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
-      #     cp -rf ./openwrt/bin/targets/* ./artifact/bin/
+      - name: Prepare artifact
+        run: |
+          mkdir -p ./artifact/package
+          mkdir -p ./artifact/buildinfo
+          mkdir -p ./artifact/bin
+          rm -rf $(find ./openwrt/bin/targets/ -type d -name "packages")
+          cp -rf $(find ./openwrt/bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          cp -rf $(find ./openwrt/bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+          cp -rf ./openwrt/bin/targets/* ./artifact/bin/
 
-      # - name: Upload buildinfo
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: OpenWrt_buildinfo
-      #     path: ./artifact/buildinfo/
+      - name: Upload buildinfo
+        uses: actions/upload-artifact@v3
+        with:
+          name: OpenWrt_buildinfo
+          path: ./artifact/buildinfo/
 
-      # - name: Upload package
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: OpenWrt_package
-      #     path: ./artifact/package/
+      - name: Upload package
+        uses: actions/upload-artifact@v3
+        with:
+          name: OpenWrt_package
+          path: ./artifact/package/
 
-      # - name: Upload firmware
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: OpenWrt_firmware
-      #     path: ./artifact/bin/
+      - name: Upload firmware
+        uses: actions/upload-artifact@v3
+        with:
+          name: OpenWrt_firmware
+          path: ./artifact/bin/
 
       - name: Generate release tag
         id: tag
@@ -118,4 +118,4 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           body_path: release.txt
-          files: ./openwrt/.config
+          files: ./artifact/bin/x86/64/*
