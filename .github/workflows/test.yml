@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Build project
         run: echo "Hello World" > release.txt
@@ -23,7 +23,7 @@ jobs:
         run: echo "sha8=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_OUTPUT
 
       - name: Create Release and Upload Asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: release.txt
           tag_name: release-${{ steps.date.outputs.date }}-${{ steps.slug.outputs.sha8 }}
